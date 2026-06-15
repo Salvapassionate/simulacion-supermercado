@@ -5,8 +5,8 @@
 # =============================================================================
 
 # --- Dimensiones de la ventana principal ---
-WIDTH       = 1550   # Ancho total de la ventana en píxeles
-HEIGHT      = 750   # Alto total de la ventana en píxeles
+WIDTH       = 1800   # Ancho total de la ventana en píxeles
+HEIGHT      = 1000   # Alto total de la ventana en píxeles
 FPS         = 60     # Fotogramas por segundo objetivo
 SIDEBAR_W   = 420    # Ancho del panel lateral de métricas (interfaz 2D)
 

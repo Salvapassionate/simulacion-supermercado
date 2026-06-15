@@ -188,32 +188,37 @@ class QueueManager:
     # 3. Actualización del flujo de atención
     # -------------------------------------------------------------------------
 
+    # -------------------------------------------------------------------------
+    # 3. Actualización del flujo de atención
+    # -------------------------------------------------------------------------
+
     def update(self, dt: float, sim_time: float, metrics) -> None:
         for cajero in self.cajeros:
             # 1. Actualizar el temporizador del cajero
             servicio_terminado = cajero.actualizar(dt)
 
-            # Si el servicio terminó en este frame, liberamos la posición física sacándolo de la cola
+            # Si el servicio terminó en este frame, liberamos la posición física
             if servicio_terminado:
                 if cajero.cola:
-                    # El cliente que acaba de terminar era el que estaba al frente
                     cajero.cola.pop(0)
                 
-                # avanza físicamente un paso al resto de la fila
+                # Avanzar un paso al resto de la fila física
                 self._reposicionar_cola(cajero)
                 
-                # Intentar rellenar el espacio vacío promoviendo a alguien desde la entrada
+                # Intentar promover a alguien desde la entrada
                 self._promover_desde_entrada(cajero, sim_time)
 
-            # 2. Iniciar servicio si el cajero está completamente libre y hay alguien esperando
+            # 2. Iniciar servicio si el cajero está libre y alguien REALMENTE ya está en la fila
             if not cajero.ocupado and cajero.cola:
                 siguiente = cajero.cola[0]
 
-                #  Solo se inicia el servicio si el cliente ya llegó físicamente a la caja
-                # y no ha iniciado su atención.
-                if siguiente.estado == ESTADO_ESPERANDO_FILA:
+                # VALIDACIÓN CRÍTICA: Iniciamos servicio solo si el cliente ya llegó físicamente
+                # a su posición asignada en la fila (ha terminado de caminar por los pasillos)
+                if siguiente.estado == ESTADO_ESPERANDO_FILA or (siguiente.ha_llegado_al_destino and siguiente.estado == ESTADO_ENTRANDO_COLA):
                     duracion = cajero.calcular_duracion_servicio(siguiente.productos)
                     siguiente.tiempo_espera = sim_time - siguiente.tiempo_inicio_cola
+                    
+                    # Forzar el movimiento exacto al mostrador del cajero
                     siguiente.mover_a_cajero(cajero.gx, cajero.gy)
                     cajero.iniciar_servicio(siguiente, duracion)
 
